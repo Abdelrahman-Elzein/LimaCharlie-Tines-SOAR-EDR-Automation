@@ -13,14 +13,12 @@ An end-to-end Security Orchestration, Automation, and Response (SOAR) lab demons
 4. Tines sends a message with details to Slack and also sends an email with the same detection details.
 
 5. Tines also sends a "User Prompt" where the user/SOC analyst is asked whether they want to isolate the infected machine or not.
--- If the user chooses to isolate it, then the infected machine is automatically isolated, a message is sent to "Slack" with the isolation status, and the message "The computer `<computer>` has been isolated" is displayed, where `<computer>` is the actual hostname of the infected endpoint.
--- If the user chooses not to isolate it, then the message "The computer `<computer>` was not isolated, please investigate" is sent, where `<computer>` is the actual hostname of the infected endpoint.
+   -- If the user chooses to isolate it, then the infected machine is automatically isolated, a message is sent to "Slack" with the isolation status, and the message "The computer `<computer>` has been isolated" is displayed, where `<computer>` is the actual hostname of the infected endpoint.
+   -- If the user chooses not to isolate it, then the message "The computer `<computer>` was not isolated, please investigate" is sent, where `<computer>` is the actual hostname of the infected endpoint.
 
 ### Topology Diagram (Draw.io)
-![Draw.io Topology](Screenshots/01%20SOAR-Workflow-Diagram%20(Draw.io).png)
 
 ### Tines Workflow Diagram
-![Tines Workflow Diagram](Screenshots/01%20SOAR-Workflow-Diagram%20(Tines).png)
 
 ## ⚙️ Implementation Steps
 
@@ -28,15 +26,15 @@ An end-to-end Security Orchestration, Automation, and Response (SOAR) lab demons
 
 | Installation Key Creation 1 | Installation Key Creation 2 | 
 | ----- | ----- | 
-| ![LimaCharlie Installation Key 1](Screenshots/02%20LimaCharlie-Installation-Key-Creation-1.png) | ![LimaCharlie Installation Key 2](Screenshots/03%20LimaCharlie-Installation-Key-Creation-2.png) | 
+| ![Installation Key 1](Screenshots/02%20LimaCharlie-Installation-Key-Creation-1.png) | ![Installation Key 2](Screenshots/03%20LimaCharlie-Installation-Key-Creation-2.png) | 
 
 2. Then, on that Windows endpoint, I downloaded the LimaCharlie EDR sensor. Using PowerShell, I navigated to the directory of the downloaded file and executed the following command: `.\hcp_win_x64_release_5.4.2.exe -i <sensor key>`, where `<sensor key>` is the key copied from LimaCharlie after creating the installation key.
 
-![Successfully Onboarded Windows Endpoint](Screenshots/04%20LimaCharlie-Successfully-Onboarded-Win-Endpoint.png)
+![Successfully Onboarded Win Endpoint](Screenshots/04%20LimaCharlie-Successfully-Onboarded-Win-Endpoint.png)
 
 3. I then downloaded the malware 'LaZagne.exe' from GitHub onto the Windows endpoint and executed it via PowerShell using the command `.\LaZagne.exe all` from its local directory.
 
-![Executing LaZagne Malware](Screenshots/05%20Win-Endpoint-Executed-LaZagne-Malware.png)
+![Win Endpoint Executed LaZagne Malware](Screenshots/05%20Win-Endpoint-Executed-LaZagne-Malware.png)
 
 4. Next, on LimaCharlie, I navigated to the path `<The onboarded win endpoint> -> Timeline`, where I was able to view the events corresponding to the execution of the LaZagne malware. The fields from those events helped me create the required LimaCharlie EDR detection and response rule (to be honest, I modified a template, but those events were still helpful).
 
@@ -44,9 +42,11 @@ An end-to-end Security Orchestration, Automation, and Response (SOAR) lab demons
 
 5. The created detection and response rule was then tested against one of the previous events on LimaCharlie (under the path: `<The onboarded win endpoint> -> Timeline`), and the test was a success.
 
+> 📄 **Exported Rule Artifact:** The complete exported rule can be found in the repository under [`Detection-Rules/Abdelrahman-Elzein-LaZagne-Malware-Detection 01.yaml`](Detection-Rules/Abdelrahman-Elzein-LaZagne-Malware-Detection%2001.yaml).
+
 | Created Detection Rule | Tested Detection Rule | 
 | ----- | ----- | 
-| ![Created Detection Rule](Screenshots/07%20LimaCharlie-Created-The-Detection-Rule.png) | ![Tested Detection Rule](Screenshots/08%20LimaCharlie-Tested-The-Detection-Rule.png) | 
+| ![Created The Detection Rule](Screenshots/07%20LimaCharlie-Created-The-Detection-Rule.png) | ![Tested The Detection Rule](Screenshots/08%20LimaCharlie-Tested-The-Detection-Rule.png) | 
 
 6. I then executed the malware (LaZagne.exe) on the Windows endpoint again, and detections began appearing in LimaCharlie's "Detections" tab, utilizing the detection and response rule that we had created earlier.
 
@@ -164,7 +164,7 @@ The computer: "<<retrieve_detections.body.detect.routing.hostname>>" was not iso
 
 | Creating Text Credential 1 | Copied ORG JWT | Creating Text Credential 2 | 
 | ----- | ----- | ----- | 
-| ![Credential 1](Screenshots/23%20Tines-Creating-LimaCharlie-Text-Credential.png) | ![Copied ORG JWT](Screenshots/24%20LimaCharlie-Copied-ORG-JWT.png) | ![Credential 2](Screenshots/25%20Tines-Creating-LimaCharlie-Text-Credential-2.png) | 
+| ![Creating Credential 1](Screenshots/23%20Tines-Creating-LimaCharlie-Text-Credential.png) | ![Copied ORG JWT](Screenshots/24%20LimaCharlie-Copied-ORG-JWT.png) | ![Creating Credential 2](Screenshots/25%20Tines-Creating-LimaCharlie-Text-Credential-2.png) | 
 
 20. Afterward, I searched for LimaCharlie in Tines and added the "Isolate Sensor" template, I then connected the "Yes" condition to it. When configuring it, the default "URL" option was `https://api.limacharlie.io/v1/<<sid>>/isolation`, I then changed it to `https://api.limacharlie.io/v1/<<retrieve_detections.body.detect.routing.sid>>/isolation`, replacing the default sensor ID field path of "`<<sid>>`" with "`<<retrieve_detections.body.detect.routing.sid>>`" (the same one used in the earlier "Slack (Send a message)" & "Send Email" actions). In the "Authorization" field, I specified the "`<<CREDENTIAL.limacharlie_credential1>>`" credential by hovering near the field, clicking the "+" symbol, and selecting "Value -> CREDENTIAL -> limaCharlie-credential1".
 
@@ -207,7 +207,7 @@ The computer: "<<retrieve_detections.body.detect.routing.hostname>>" has been is
 
 | Declined 1 | Declined 2 | Declined 3 | 
 | ----- | ----- | ----- | 
-| ![Dec 1](Screenshots/40%20Tines-Endpoint-Isolation-Declined-1.png) | ![Dec 2](Screenshots/41%20Tines-Endpoint-Isolation-Declined-2.png) | ![Dec 3](Screenshots/42%20Tines-Endpoint-Isolation-Declined-3.png) | 
+| ![Declined 1](Screenshots/40%20Tines-Endpoint-Isolation-Declined-1.png) | ![Declined 2](Screenshots/41%20Tines-Endpoint-Isolation-Declined-2.png) | ![Declined 3](Screenshots/42%20Tines-Endpoint-Isolation-Declined-3.png) | 
 
 ## 👨‍💻 Author
 
