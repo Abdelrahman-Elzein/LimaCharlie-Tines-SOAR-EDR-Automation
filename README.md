@@ -13,14 +13,14 @@ An end-to-end Security Orchestration, Automation, and Response (SOAR) lab demons
 4. Tines sends a message with details to Slack and also sends an email with the same detection details.
 
 5. Tines also sends a "User Prompt" where the user/SOC analyst is asked whether they want to isolate the infected machine or not.
-   \-- If the user chooses to isolate it, then the infected machine is automatically isolated, a message is sent to "Slack" with the isolation status, and the message "The computer  has been isolated" is displayed, where  is the actual hostname of the infected endpoint.
-   \-- If the user chooses not to isolate it, then the message "The computer  was not isolated, please investigate" is sent, where  is the actual hostname of the infected endpoint.
+-- If the user chooses to isolate it, then the infected machine is automatically isolated, a message is sent to "Slack" with the isolation status, and the message "The computer `<computer>` has been isolated" is displayed, where `<computer>` is the actual hostname of the infected endpoint.
+-- If the user chooses not to isolate it, then the message "The computer `<computer>` was not isolated, please investigate" is sent, where `<computer>` is the actual hostname of the infected endpoint.
 
 ### Topology Diagram (Draw.io)
-![01 SOAR-Workflow-Diagram (Draw.io)](Screenshots/01%20SOAR-Workflow-Diagram%20(Draw.io).png)
+![Draw.io Topology](Screenshots/01%20SOAR-Workflow-Diagram%20(Draw.io).png)
 
 ### Tines Workflow Diagram
-![01 SOAR-Workflow-Diagram (Tines)](Screenshots/01%20SOAR-Workflow-Diagram%20(Tines).png)
+![Tines Workflow Diagram](Screenshots/01%20SOAR-Workflow-Diagram%20(Tines).png)
 
 ## ⚙️ Implementation Steps
 
@@ -28,55 +28,55 @@ An end-to-end Security Orchestration, Automation, and Response (SOAR) lab demons
 
 | Installation Key Creation 1 | Installation Key Creation 2 | 
 | ----- | ----- | 
-| ![02 LimaCharlie-Installation-Key-Creation-1](Screenshots/02%20LimaCharlie-Installation-Key-Creation-1.png) | ![03 LimaCharlie-Installation-Key-Creation-2](Screenshots/03%20LimaCharlie-Installation-Key-Creation-2.png) | 
+| ![LimaCharlie Installation Key 1](Screenshots/02%20LimaCharlie-Installation-Key-Creation-1.png) | ![LimaCharlie Installation Key 2](Screenshots/03%20LimaCharlie-Installation-Key-Creation-2.png) | 
 
 2. Then, on that Windows endpoint, I downloaded the LimaCharlie EDR sensor. Using PowerShell, I navigated to the directory of the downloaded file and executed the following command: `.\hcp_win_x64_release_5.4.2.exe -i <sensor key>`, where `<sensor key>` is the key copied from LimaCharlie after creating the installation key.
 
-![04 LimaCharlie-Successfully-Onboarded-Win-Endpoint](Screenshots/04%20LimaCharlie-Successfully-Onboarded-Win-Endpoint.png)
+![Successfully Onboarded Windows Endpoint](Screenshots/04%20LimaCharlie-Successfully-Onboarded-Win-Endpoint.png)
 
 3. I then downloaded the malware 'LaZagne.exe' from GitHub onto the Windows endpoint and executed it via PowerShell using the command `.\LaZagne.exe all` from its local directory.
 
-![05 Win-Endpoint-Executed-LaZagne-Malware](Screenshots/05%20Win-Endpoint-Executed-LaZagne-Malware.png)
+![Executing LaZagne Malware](Screenshots/05%20Win-Endpoint-Executed-LaZagne-Malware.png)
 
 4. Next, on LimaCharlie, I navigated to the path `<The onboarded win endpoint> -> Timeline`, where I was able to view the events corresponding to the execution of the LaZagne malware. The fields from those events helped me create the required LimaCharlie EDR detection and response rule (to be honest, I modified a template, but those events were still helpful).
 
-![06 LimaCharlie-EDR-LaZagne-Execution-Event](Screenshots/06%20LimaCharlie-EDR-LaZagne-Execution-Event.png)
+![LimaCharlie EDR LaZagne Execution Event](Screenshots/06%20LimaCharlie-EDR-LaZagne-Execution-Event.png)
 
 5. The created detection and response rule was then tested against one of the previous events on LimaCharlie (under the path: `<The onboarded win endpoint> -> Timeline`), and the test was a success.
 
 | Created Detection Rule | Tested Detection Rule | 
 | ----- | ----- | 
-| ![07 LimaCharlie-Created-The-Detection-Rule](Screenshots/07%20LimaCharlie-Created-The-Detection-Rule.png) | ![08 LimaCharlie-Tested-The-Detection-Rule](Screenshots/08%20LimaCharlie-Tested-The-Detection-Rule.png) | 
+| ![Created Detection Rule](Screenshots/07%20LimaCharlie-Created-The-Detection-Rule.png) | ![Tested Detection Rule](Screenshots/08%20LimaCharlie-Tested-The-Detection-Rule.png) | 
 
 6. I then executed the malware (LaZagne.exe) on the Windows endpoint again, and detections began appearing in LimaCharlie's "Detections" tab, utilizing the detection and response rule that we had created earlier.
 
-![09 LaZagne-Execution-Detection-LimaCharlie](Screenshots/09%20LaZagne-Execution-Detection-LimaCharlie.png)
+![LaZagne Execution Detection LimaCharlie](Screenshots/09%20LaZagne-Execution-Detection-LimaCharlie.png)
 
 7. Moving over to Tines, I added a webhook to retrieve detections from LimaCharlie and copied the webhook's URL. Then, on LimaCharlie, I created a new output and pasted the webhook's URL into the "Destination Host" field during the creation process.
 
 | Tines Created Webhook | LimaCharlie Created Output | 
 | ----- | ----- | 
-| ![10 Tines-Created-Webhook](Screenshots/10%20Tines-Created-Webhook.png) | ![11 LimaCharlie-Created-Output](Screenshots/11%20LimaCharlie-Created-Output.png) | 
+| ![Tines Created Webhook](Screenshots/10%20Tines-Created-Webhook.png) | ![LimaCharlie Created Output](Screenshots/11%20LimaCharlie-Created-Output.png) | 
 
 8. I executed the malware (LaZagne.exe) once more on the Windows endpoint and verified that detection events started appearing on the configured Tines webhook (by clicking on the webhook, then navigating to "Events").
 
-![12 Tines-Webhook-Detection-Event](Screenshots/12%20Tines-Webhook-Detection-Event.png)
+![Tines Webhook Detection Event](Screenshots/12%20Tines-Webhook-Detection-Event.png)
 
 9. Next, I went to Slack, created a new channel named "alerts", and copied its channel ID.
 
-![13 Created-Slack-alerts-Channel](Screenshots/13%20Created-Slack-alerts-Channel.png)
+![Created Slack Alerts Channel](Screenshots/13%20Created-Slack-alerts-Channel.png)
 
 10. I then visited the URL "https://explained.tines.com/en/articles/8713184-slack-authentication-guide" and followed the documentation to successfully integrate Tines with Slack. Afterward, I added a new "Send a message (Slack action)" block in Tines and connected the previously created webhook to it. I clicked on the action block and pasted the previously copied channel ID of the "alerts" channel into the "Channel / User ID" field displayed in the right configuration panel.
 
-![14 Slack-Tines-Integration](Screenshots/14%20Slack-Tines-Integration.png)
+![Slack Tines Integration](Screenshots/14%20Slack-Tines-Integration.png)
 
 11. Finally, I went back to the webhook configured in Tines, clicked on it, selected "Events", and navigated through the existing detection event. I copied the path of every relevant field (any field of interest that I wanted to include in the detection messages sent to Slack's alerts channel) by clicking the copy icon on its left and choosing "Copy path".
 
-![15 Copying-Paths-Of-Relevant-Event-Fields](Screenshots/15%20Copying-Paths-Of-Relevant-Event-Fields.png)
+![Copying Paths Of Relevant Event Fields](Screenshots/15%20Copying-Paths-Of-Relevant-Event-Fields.png)
 
 12. I went back to the "Slack (Send a message)" action in Tines. In the "Message" field, I pasted the field paths that I copied earlier, while also adding a descriptive label before each one to indicate the information it contains:
 
-```
+```text
 Title: <<retrieve_detections.body.cat>>
 Time: <<retrieve_detections.body.detect.routing.event_time>>
 Username: <<retrieve_detections.body.detect.event.USER_NAME>>
@@ -89,11 +89,11 @@ File hash: <<retrieve_detections.body.detect.event.HASH>>
 Detection URL: <<retrieve_detections.body.link>>
 ```
 
-![16 Tines-Slack-Pasted-Field-Paths](Screenshots/16%20Tines-Slack-Pasted-Field-Paths.png)
+![Tines Slack Pasted Field Paths](Screenshots/16%20Tines-Slack-Pasted-Field-Paths.png)
 
-13. Then, I added a "Send Email" action in Tines and connected the previously created webhook to it. I configured the options for "Recipients", "Reply to", "Sender name" (as "Alerts"), "Subject" (as "\[Security Alert\] <<retrieve_detections.body.cat>>") to identify the email as a security alert and dynamically include the detection title in the subject line, making it easier for analysts to recognize and identify incoming alerts, and the "Body". In the "Body" field, I followed the same process as the "Slack (Send a message)" action by pasting the exact same field paths with brief descriptions. However, unlike before, I had to add an HTML `<br>` tag between each field path:
+13. Then, I added a "Send Email" action in Tines and connected the previously created webhook to it. I configured the options for "Recipients", "Reply to", "Sender name" (as "Alerts"), "Subject" (as "[Security Alert] <<retrieve_detections.body.cat>>") to identify the email as a security alert and dynamically include the detection title in the subject line, making it easier for analysts to recognize and identify incoming alerts, and the "Body". In the "Body" field, I followed the same process as the "Slack (Send a message)" action by pasting the exact same field paths with brief descriptions. However, unlike before, I had to add an HTML `<br>` tag between each field path:
 
-```
+```text
 Title: <<retrieve_detections.body.cat>>
 <br>
 Time: <<retrieve_detections.body.detect.routing.event_time>>
@@ -117,11 +117,11 @@ Detection URL: <<retrieve_detections.body.link>>
 
 (I did this so the detection details sent via email would be properly formatted. During testing, I noticed that without adding the `<br>` tags between the field paths, all fields appeared as a single messy paragraph when the email was sent—unlike the "Slack (Send a message)" action, where the listed fields format perfectly without them.)
 
-![17 Tines-Send-Mail-Action-Config](Screenshots/17%20Tines-Send-Mail-Action-Config.png)
+![Tines Send Mail Action Config](Screenshots/17%20Tines-Send-Mail-Action-Config.png)
 
 14. I also added a "Page" in Tines, connected the previously created webhook to it, named it "User Prompt", and made it available to "Members of this Tines tenant". I set the "Page behavior" to "Show success message" and defined the "Success message" as "Thank you, you can now close this window." Next, I clicked the "Edit page" button, added a "Heading" section with the text "Abdelrahman-Elzein-SOAR-EDR-Project", and added a "Rich text" section containing the same field paths I copied earlier:
 
-```
+```text
 Title: <<retrieve_detections.body.cat>>
 Time: <<retrieve_detections.body.detect.routing.event_time>>
 Username: <<retrieve_detections.body.detect.event.USER_NAME>>
@@ -136,7 +136,7 @@ Detection URL: <<retrieve_detections.body.link>>
 
 | Tines Added New Page | Tines Edited The New Page | 
 | ----- | ----- | 
-| ![18 Tines-Added-New-Page](Screenshots/18%20Tines-Added-New-Page.png) | ![19 Tines-Edited-The-New-Page](Screenshots/19%20Tines-Edited-The-New-Page.png) | 
+| ![Tines Added New Page](Screenshots/18%20Tines-Added-New-Page.png) | ![Tines Edited The New Page](Screenshots/19%20Tines-Edited-The-New-Page.png) | 
 
 15. While still in the "Edit page" view, I added a "Boolean" component to the page, naming it "Isolate?" and setting the "Labels" to "Yes" and "No".
 
@@ -146,17 +146,17 @@ Detection URL: <<retrieve_detections.body.link>>
 
 | Tines Created Condition 1 | Tines Created Condition 2 | 
 | ----- | ----- | 
-| ![20 Tines-Created-Condition-1](Screenshots/20%20Tines-Created-Condition-1.png) | ![21 Tines-Created-Condition-2](Screenshots/21%20Tines-Created-Condition-2.png) | 
+| ![Tines Created Condition 1](Screenshots/20%20Tines-Created-Condition-1.png) | ![Tines Created Condition 2](Screenshots/21%20Tines-Created-Condition-2.png) | 
 
 18. I copied the original "Slack (Send a message)" action and pasted it to create a duplicate version. I connected the "No" condition to it and modified its "Message" section to:
 
-```
+```text
 The computer: "<<retrieve_detections.body.detect.routing.hostname>>" was not isolated, please investigate.
 ```
 
 (I used the exact same hostname field path that I utilized in the previous Slack and email actions.)
 
-![22 Tines-No-Condition-Slack-Message](Screenshots/22%20Tines-No-Condition-Slack-Message.png)
+![Tines No Condition Slack Message](Screenshots/22%20Tines-No-Condition-Slack-Message.png)
 
 19. I then went back to the Tines dashboard by clicking "Personal" on the top left to exit the playbook story. Next, I clicked on "Personal -> Credentials -> New -> Manual creation -> Text" and named the credential "LimaCharlie-credential1" (any name can be used). Regarding the "Value" field, I went to LimaCharlie under "Access Management -> REST API", copied the "ORG JWT" value, returned to Tines, and pasted it into the "Value" field. In the "URLs and Domains" field, I entered `*.limacharlie.io` so that this credential can only be used with the LimaCharlie domain and its subdomains. Finally, I clicked "Save" to complete the creation of the text credential.
 
@@ -164,19 +164,19 @@ The computer: "<<retrieve_detections.body.detect.routing.hostname>>" was not iso
 
 | Creating Text Credential 1 | Copied ORG JWT | Creating Text Credential 2 | 
 | ----- | ----- | ----- | 
-| ![23 Tines-Creating-LimaCharlie-Text-Credential](Screenshots/23%20Tines-Creating-LimaCharlie-Text-Credential.png) | ![24 LimaCharlie-Copied-ORG-JWT](Screenshots/24%20LimaCharlie-Copied-ORG-JWT.png) | ![25 Tines-Creating-LimaCharlie-Text-Credential-2](Screenshots/25%20Tines-Creating-LimaCharlie-Text-Credential-2.png) | 
+| ![Credential 1](Screenshots/23%20Tines-Creating-LimaCharlie-Text-Credential.png) | ![Copied ORG JWT](Screenshots/24%20LimaCharlie-Copied-ORG-JWT.png) | ![Credential 2](Screenshots/25%20Tines-Creating-LimaCharlie-Text-Credential-2.png) | 
 
 20. Afterward, I searched for LimaCharlie in Tines and added the "Isolate Sensor" template, I then connected the "Yes" condition to it. When configuring it, the default "URL" option was `https://api.limacharlie.io/v1/<<sid>>/isolation`, I then changed it to `https://api.limacharlie.io/v1/<<retrieve_detections.body.detect.routing.sid>>/isolation`, replacing the default sensor ID field path of "`<<sid>>`" with "`<<retrieve_detections.body.detect.routing.sid>>`" (the same one used in the earlier "Slack (Send a message)" & "Send Email" actions). In the "Authorization" field, I specified the "`<<CREDENTIAL.limacharlie_credential1>>`" credential by hovering near the field, clicking the "+" symbol, and selecting "Value -> CREDENTIAL -> limaCharlie-credential1".
 
-![26 Tines-Isolate-Sensor-LimaCharlie-Template](Screenshots/26%20Tines-Isolate-Sensor-LimaCharlie-Template.png)
+![Tines Isolate Sensor LimaCharlie Template](Screenshots/26%20Tines-Isolate-Sensor-LimaCharlie-Template.png)
 
 21. I then searched for LimaCharlie in Tines again and added the "Get Isolation Status" template, I then connected the previously added "Isolate Sensor" template to it. When configuring it, the default "URL" option was `https://api.limacharlie.io/v1/<<sid>>/isolation`, I then changed it to `https://api.limacharlie.io/v1/<<retrieve_detections.body.detect.routing.sid>>/isolation`, replacing the default sensor ID field path of "`<<sid>>`" with "`<<retrieve_detections.body.detect.routing.sid>>`" (the same one used in the earlier "Slack (Send a message)" & "Send Email" actions). In the "Authorization" field, I specified the "`<<CREDENTIAL.limacharlie_credential1>>`" credential by hovering near the field, clicking the "+" symbol, and selecting "Value -> CREDENTIAL -> limaCharlie-credential1".
 
-![27 Tines-Get-Isolation-Status-LimaCharlie-Template](Screenshots/27%20Tines-Get-Isolation-Status-LimaCharlie-Template.png)
+![Tines Get Isolation Status Template](Screenshots/27%20Tines-Get-Isolation-Status-LimaCharlie-Template.png)
 
 22. Finally, I copied the first "Slack (Send a message)" action to create another duplicate and connected the "Get Isolation Status" template to it. I modified its "Message" field to:
 
-```
+```text
 Isolation Status: <<get_isolation_status.body.is_isolated>>
 The computer: "<<retrieve_detections.body.detect.routing.hostname>>" has been isolated.
 ```
@@ -185,7 +185,7 @@ The computer: "<<retrieve_detections.body.detect.routing.hostname>>" has been is
 
 (Hint: Keep in mind that if some field paths or field values do not appear in a Tines action/block's "Events" settings, you may need to re-execute the "LaZagne" malware once again. This usually happens if you have newly or recently added that action/block after the malware's execution, meaning the events related to the malware's execution have not reached that action/block yet.)
 
-![28 Tines-Isolate-Sensor-Slack-Message](Screenshots/28%20Tines-Isolate-Sensor-Slack-Message.png)
+![Tines Isolate Sensor Slack Message](Screenshots/28%20Tines-Isolate-Sensor-Slack-Message.png)
 
 ## 🧪 Workflow Execution & Proof of Concept
 
@@ -193,21 +193,21 @@ The computer: "<<retrieve_detections.body.detect.routing.hostname>>" has been is
 
 | Workflow 1 | Workflow 2 | Workflow 3 | Workflow 4 | 
 | ----- | ----- | ----- | ----- | 
-| ![29 Tines-Endpoint-Isolation-Workflow-Execution-1](Screenshots/29%20Tines-Endpoint-Isolation-Workflow-Execution-1.png) | ![30 Tines-Endpoint-Isolation-Workflow-Execution-2](Screenshots/30%20Tines-Endpoint-Isolation-Workflow-Execution-2.png) | ![31 Tines-Endpoint-Isolation-Workflow-Execution-3](Screenshots/31%20Tines-Endpoint-Isolation-Workflow-Execution-3.png) | ![32 Tines-Endpoint-Isolation-Workflow-Execution-4](Screenshots/32%20Tines-Endpoint-Isolation-Workflow-Execution-4.png) | 
+| ![Ex 1](Screenshots/29%20Tines-Endpoint-Isolation-Workflow-Execution-1.png) | ![Ex 2](Screenshots/30%20Tines-Endpoint-Isolation-Workflow-Execution-2.png) | ![Ex 3](Screenshots/31%20Tines-Endpoint-Isolation-Workflow-Execution-3.png) | ![Ex 4](Screenshots/32%20Tines-Endpoint-Isolation-Workflow-Execution-4.png) | 
 
 | Workflow 5 | Workflow 6 | Workflow 7 | Workflow 8 | 
 | ----- | ----- | ----- | ----- | 
-| ![33 Tines-Endpoint-Isolation-Workflow-Execution-5](Screenshots/33%20Tines-Endpoint-Isolation-Workflow-Execution-5.png) | ![34 Tines-Endpoint-Isolation-Workflow-Execution-6](Screenshots/34%20Tines-Endpoint-Isolation-Workflow-Execution-6.png) | ![35 Tines-Endpoint-Isolation-Workflow-Execution-7](Screenshots/35%20Tines-Endpoint-Isolation-Workflow-Execution-7.png) | ![36 Tines-Endpoint-Isolation-Workflow-Execution-8](Screenshots/36%20Tines-Endpoint-Isolation-Workflow-Execution-8.png) | 
+| ![Ex 5](Screenshots/33%20Tines-Endpoint-Isolation-Workflow-Execution-5.png) | ![Ex 6](Screenshots/34%20Tines-Endpoint-Isolation-Workflow-Execution-6.png) | ![Ex 7](Screenshots/35%20Tines-Endpoint-Isolation-Workflow-Execution-7.png) | ![Ex 8](Screenshots/36%20Tines-Endpoint-Isolation-Workflow-Execution-8.png) | 
 
 | Workflow 9 | Workflow 10 | Workflow 11 | 
 | ----- | ----- | ----- | 
-| ![37 Tines-Endpoint-Isolation-Workflow-Execution-9](Screenshots/37%20Tines-Endpoint-Isolation-Workflow-Execution-9.png) | ![38 Tines-Endpoint-Isolation-Workflow-Execution-10](Screenshots/38%20Tines-Endpoint-Isolation-Workflow-Execution-10.png) | ![39 Tines-Endpoint-Isolation-Workflow-Execution-11](Screenshots/39%20Tines-Endpoint-Isolation-Workflow-Execution-11.png) | 
+| ![Ex 9](Screenshots/37%20Tines-Endpoint-Isolation-Workflow-Execution-9.png) | ![Ex 10](Screenshots/38%20Tines-Endpoint-Isolation-Workflow-Execution-10.png) | ![Ex 11](Screenshots/39%20Tines-Endpoint-Isolation-Workflow-Execution-11.png) | 
 
 ### Endpoint Isolation Declined Execution
 
 | Declined 1 | Declined 2 | Declined 3 | 
 | ----- | ----- | ----- | 
-| ![40 Tines-Endpoint-Isolation-Declined-1](Screenshots/40%20Tines-Endpoint-Isolation-Declined-1.png) | ![41 Tines-Endpoint-Isolation-Declined-2](Screenshots/41%20Tines-Endpoint-Isolation-Declined-2.png) | ![42 Tines-Endpoint-Isolation-Declined-3](Screenshots/42%20Tines-Endpoint-Isolation-Declined-3.png) | 
+| ![Dec 1](Screenshots/40%20Tines-Endpoint-Isolation-Declined-1.png) | ![Dec 2](Screenshots/41%20Tines-Endpoint-Isolation-Declined-2.png) | ![Dec 3](Screenshots/42%20Tines-Endpoint-Isolation-Declined-3.png) | 
 
 ## 👨‍💻 Author
 
