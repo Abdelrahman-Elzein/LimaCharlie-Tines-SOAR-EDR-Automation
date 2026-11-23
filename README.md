@@ -187,27 +187,69 @@ The computer: "<<retrieve_detections.body.detect.routing.hostname>>" has been is
 
 ![Tines Isolate Sensor Slack Message](Screenshots/28%20Tines-Isolate-Sensor-Slack-Message.png)
 
-## 🧪 Workflow Execution & Proof of Concept
+## 🧪 End-to-End Validation Test
 
-### Endpoint Isolation Approved Execution
+To verify both decision branches of the SOAR workflow, I tested the playbook against two scenarios after executing `LaZagne.exe` on the Windows endpoint:
 
-| Workflow 1 | Workflow 2 | Workflow 3 | Workflow 4 | 
-| ----- | ----- | ----- | ----- | 
-| ![Ex 1](Screenshots/29%20Tines-Endpoint-Isolation-Workflow-Execution-1.png) | ![Ex 2](Screenshots/30%20Tines-Endpoint-Isolation-Workflow-Execution-2.png) | ![Ex 3](Screenshots/31%20Tines-Endpoint-Isolation-Workflow-Execution-3.png) | ![Ex 4](Screenshots/32%20Tines-Endpoint-Isolation-Workflow-Execution-4.png) | 
+### Scenario A: Host Isolation Approved (Yes)
 
-| Workflow 5 | Workflow 6 | Workflow 7 | Workflow 8 | 
-| ----- | ----- | ----- | ----- | 
-| ![Ex 5](Screenshots/33%20Tines-Endpoint-Isolation-Workflow-Execution-5.png) | ![Ex 6](Screenshots/34%20Tines-Endpoint-Isolation-Workflow-Execution-6.png) | ![Ex 7](Screenshots/35%20Tines-Endpoint-Isolation-Workflow-Execution-7.png) | ![Ex 8](Screenshots/36%20Tines-Endpoint-Isolation-Workflow-Execution-8.png) | 
+1. **Malware Execution:** Executed `.\LaZagne.exe all` via PowerShell on the Windows 10 endpoint to trigger the custom LimaCharlie detection rule.
 
-| Workflow 9 | Workflow 10 | Workflow 11 | 
-| ----- | ----- | ----- | 
-| ![Ex 9](Screenshots/37%20Tines-Endpoint-Isolation-Workflow-Execution-9.png) | ![Ex 10](Screenshots/38%20Tines-Endpoint-Isolation-Workflow-Execution-10.png) | ![Ex 11](Screenshots/39%20Tines-Endpoint-Isolation-Workflow-Execution-11.png) | 
+   ![Workflow Execution 1](Screenshots/29%20Tines-Endpoint-Isolation-Workflow-Execution-1.png)
 
-### Endpoint Isolation Declined Execution
+2. **LimaCharlie Detection Alert:** Verified that the "LaZagne Malware Execution" detection triggered in LimaCharlie's Detections tab.
 
-| Declined 1 | Declined 2 | Declined 3 | 
-| ----- | ----- | ----- | 
-| ![Declined 1](Screenshots/40%20Tines-Endpoint-Isolation-Declined-1.png) | ![Declined 2](Screenshots/41%20Tines-Endpoint-Isolation-Declined-2.png) | ![Declined 3](Screenshots/42%20Tines-Endpoint-Isolation-Declined-3.png) | 
+   ![Workflow Execution 2](Screenshots/30%20Tines-Endpoint-Isolation-Workflow-Execution-2.png)
+
+3. **Tines Webhook Ingestion:** Confirmed that LimaCharlie forwarded the detection JSON payload to the "Retrieve Detections" webhook in Tines.
+
+   ![Workflow Execution 3](Screenshots/31%20Tines-Endpoint-Isolation-Workflow-Execution-3.png)
+
+4. **Slack Alert Notification:** Verified that Tines posted the formatted detection details to the `#alerts` Slack channel.
+
+   ![Workflow Execution 4](Screenshots/32%20Tines-Endpoint-Isolation-Workflow-Execution-4.png)
+
+5. **Email Alert Notification:** Confirmed that the "Send Email" action delivered the formatted security alert to the analyst's inbox.
+
+   ![Workflow Execution 5](Screenshots/33%20Tines-Endpoint-Isolation-Workflow-Execution-5.png)
+
+6. **Analyst User Prompt Triggered:** Verified that the "User Prompt" page generated a new event in Tines awaiting analyst input.
+
+   ![Workflow Execution 6](Screenshots/34%20Tines-Endpoint-Isolation-Workflow-Execution-6.png)
+
+7. **Analyst Approves Isolation:** Opened the Tines User Prompt page, reviewed the incident telemetry, selected "Yes" under "Isolate?", and clicked Submit.
+
+   ![Workflow Execution 7](Screenshots/35%20Tines-Endpoint-Isolation-Workflow-Execution-7.png)
+
+8. **Baseline Sensor Status Before Isolation:** Checked the LimaCharlie Sensor Overview page prior to isolation, confirming Network Access was still "Allowed" (with the "ISOLATE FROM NETWORK" button active).
+
+   ![Workflow Execution 8](Screenshots/36%20Tines-Endpoint-Isolation-Workflow-Execution-8.png)
+
+9. **User Prompt Submission Confirmed:** Confirmed the Tines User Prompt displayed the submission success message ("Thank you, you can now close this window.").
+
+   ![Workflow Execution 9](Screenshots/37%20Tines-Endpoint-Isolation-Workflow-Execution-9.png)
+
+10. **Sensor Network Access Isolated:** Verified in LimaCharlie's Sensor Overview page that Network Access changed from "Allowed" to "Isolated" (and the top-right button changed to "REJOIN NETWORK").
+
+    ![Workflow Execution 10](Screenshots/38%20Tines-Endpoint-Isolation-Workflow-Execution-10.png)
+
+11. **Isolation Confirmation Sent to Slack:** Confirmed that Tines posted the isolation status ("Isolation Status: true") and confirmation message ("The computer: 'a-elzein_pc.localdomain' has been isolated.") to the `#alerts` Slack channel.
+
+    ![Workflow Execution 11](Screenshots/39%20Tines-Endpoint-Isolation-Workflow-Execution-11.png)
+
+### Scenario B: Host Isolation Declined (No)
+
+12. **Analyst Declines Isolation:** Re-ran the test and selected "No" under "Isolate?" on the Tines User Prompt page to simulate a manual investigation decision.
+
+    ![Isolation Declined 1](Screenshots/40%20Tines-Endpoint-Isolation-Declined-1.png)
+
+13. **Declined Prompt Submitted:** Confirmed the Tines User Prompt displayed the submission confirmation message ("Thank you, you can now close this window.").
+
+    ![Isolation Declined 2](Screenshots/41%20Tines-Endpoint-Isolation-Declined-2.png)
+
+14. **Investigation Notice Sent to Slack:** Verified that Tines routed the workflow down the "No" branch and posted the escalation message to the `#alerts` Slack channel ("The computer: 'a-elzein_pc.localdomain' was not isolated, please investigate.").
+
+    ![Isolation Declined 3](Screenshots/42%20Tines-Endpoint-Isolation-Declined-3.png)
 
 ## 👨‍💻 Author
 
